@@ -5,6 +5,34 @@ cmake_minimum_required (VERSION 3.14)
 
 include(CheckPIESupported)
 
+
+if (NOT DEFINED ANDROID_ABI)
+  if (WAMR_BUILD_TARGET STREQUAL "X86_64")
+    set (ANDROID_ABI "x86_64")
+  elseif (WAMR_BUILD_TARGET STREQUAL "X86_32")
+    set (ANDROID_ABI "x86")
+  elseif (WAMR_BUILD_TARGET MATCHES "AARCH64.*")
+    set (ANDROID_ABI "arm64-v8a")
+  elseif (WAMR_BUILD_TARGET MATCHES "ARM.*")
+    set (ANDROID_ABI "armeabi-v7a")
+  else ()
+    set (ANDROID_ABI "riscv64")
+  endif ()
+endif ()
+
+if (NOT DEFINED ANDROID_LD)
+  set (ANDROID_LD lld)
+endif ()
+
+if (NOT DEFINED ANDROID_PLATFORM)
+  set (ANDROID_PLATFORM 24)
+endif ()
+
+# https://android.googlesource.com/platform/ndk/+/master/build/cmake/android.toolchain.cmake
+set (CMAKE_TOOLCHAIN_FILE "$ENV{ANDROID_NDK_LATEST_HOME}/build/cmake/android.toolchain.cmake")
+set (ANDROID_SDK $ENV{ANDROID_HOME})
+set (ANDROID_NDK $ENV{ANDROID_NDK_LATEST_HOME})
+
 project (iwasm)
 
 set (CMAKE_VERBOSE_MAKEFILE OFF)
@@ -178,7 +206,6 @@ target_link_libraries(iwasm
   ${UV_A_LIBS}
   -lm
   -ldl
-  -lpthread
 )
 
 install (TARGETS iwasm DESTINATION bin)

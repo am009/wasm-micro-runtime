@@ -126,6 +126,23 @@ endif ()
 #set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fstack-protector-strong --param ssp-buffer-size=4")
 #set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-z,noexecstack,-z,relro,-z,now")
 
+include (${SHARED_DIR}/utils/uncommon/shared_uncommon.cmake)
+
+add_executable (iwasmexe main.c ${UNCOMMON_SHARED_SOURCE})
+
+# set_target_properties (iwasmexe PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+target_link_libraries(iwasmexe
+  $<$<BOOL:${WAMR_BUILD_SHARED}>:libiwasm> $<$<NOT:$<BOOL:${WAMR_BUILD_SHARED}>>:vmlib>
+  ${LLVM_AVAILABLE_LIBS}
+  ${UV_A_LIBS}
+  -lm
+  -ldl
+  -llog
+)
+
+# install (TARGETS iwasm DESTINATION bin)
+
 add_library (iwasm SHARED ${WAMR_RUNTIME_LIB_SOURCE})
 if (CMAKE_BUILD_TYPE STREQUAL Release)
 target_link_libraries (iwasm ${LLVM_AVAILABLE_LIBS} ${UV_A_LIBS} -lm -ldl -landroid -llog -s)
